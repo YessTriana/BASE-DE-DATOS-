@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Eventos Dinámicos</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0; padding: 20px;
+    background: #f8f9fa;
+    color: #333;
+  }
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+  }
+  #eventos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+  .evento-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease;
+  }
+  .evento-card:hover {
+    transform: translateY(-5px);
+  }
+  .evento-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  .evento-card h3 {
+    margin: 15px;
+    font-size: 1.2rem;
+    color: #34495e;
+  }
+  .evento-card p {
+    margin: 0 15px 15px 15px;
+    font-size: 0.95rem;
+    color: #555;
+  }
+  #mensaje-error {
+    text-align: center;
+    color: crimson;
+    font-weight: bold;
+    margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+  <h1>Eventos Dinámicos</h1>
+  <section id="eventos-container">
+    <!-- Aquí se cargarán los eventos dinámicamente -->
+  </section>
+  <p id="mensaje-error"></p>
+
+<script>
+  const eventosContainer = document.getElementById('eventos-container');
+  const mensajeError = document.getElementById('mensaje-error');
+
+  async function cargarEventos() {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/eventos');
+      console.log('Response:', response);
+      if (!response.ok) {
+        throw new Error("HTTP error " + response.status);
+      }
+      const eventos = await response.json();
+      console.log('Eventos:', eventos);
+
+      if (!Array.isArray(eventos) || eventos.length === 0) {
+        eventosContainer.innerHTML = "<p>No se encontraron eventos.</p>";
+        return;
+      }
+
+      mensajeError.textContent = "";
+      eventosContainer.innerHTML = "";
+
+      eventos.forEach(evento => {
+        const card = document.createElement('div');
+        card.className = 'evento-card';
+        card.innerHTML = `
+          <img src="\${evento.imagen_url}" alt="\${evento.titulo}">
+          <h3>\${evento.titulo}</h3>
+          <p>\${evento.descripcion}</p>
+        `;
+        eventosContainer.appendChild(card);
+      });
+
+    } catch (error) {
+      console.error('Error cargando eventos:', error);
+      mensajeError.textContent = "No se pudieron cargar los eventos. Revisa consola para más detalles.";
+      eventosContainer.innerHTML = "";
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', cargarEventos);
+</script>
+</body>
+</html>
+
